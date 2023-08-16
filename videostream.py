@@ -8,14 +8,23 @@ import cv2
 #initialize camera and grab ref
 
 cam = PiCamera()
-rawCapt = PiRGBArray(camera)
+cam.resolution = (640, 480)
+cam.framerate = 32
+rawCapt = PiRGBArray(cam, size=(640, 480))
 
 time.sleep(1)
 
-#take image from camera
-cam.capture(rawCapt, format="bgr")
-image = rawCapt.array
-
-#display img and wait for key
-cv2.imshow("Image", image)
-cv2.waitKey(0) 
+for frame in cam.capture_continuous(rawCapt, format="bgr", use_video_port=True):
+	#grab numpy array
+	image = frame.array
+	
+	#display frame
+	cv2.imshow("Frame", image)
+	key = cv2.waitKey(1) & 0xFF
+	
+	#clear stream for next
+	rawCapt.truncate(0)
+	
+	#break on q
+	if key == ord("q"):
+		break
