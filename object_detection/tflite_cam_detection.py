@@ -1,6 +1,5 @@
 # Import packages
 from threading import Thread
-from roboflow import Roboflow
 import os
 import argparse
 import cv2
@@ -9,12 +8,13 @@ import time
 import numpy as np
 import importlib.util
 
-# Define VideoStream class to handle streaming of video from webcam in separate processing thread
-# Source - Adrian Rosebrock, PyImageSearch: https://www.pyimagesearch.com/2015/12/28/increasing-raspberry-pi-fps-with-python-and-opencv/
+from roboflow import Roboflow
 rf = Roboflow(api_key="oTFAmE6SVFHYvWSLjvsK")
 project = rf.workspace().project("drowning-detection-and-prevention-in-swimming-pools")
-global model 
 model = project.version(1).model
+
+# Define VideoStream class to handle streaming of video from webcam in separate processing thread
+# Source - Adrian Rosebrock, PyImageSearch: https://www.pyimagesearch.com/2015/12/28/increasing-raspberry-pi-fps-with-python-and-opencv/
 
 class VideoStream:
     """Camera object that controls video streaming from the Picamera"""
@@ -170,13 +170,11 @@ while True:
     # Normalize pixel values if using a floating model (i.e. if model is non-quantized)
     if floating_model:
         input_data = (np.float32(input_data) - input_mean) / input_std
-
+    # print(model.predict(input_data, confidence=40, overlap=30).json())
     # Perform the actual detection by running the model with the image as input
     interpreter.set_tensor(input_details[0]['index'],input_data)
     interpreter.invoke()
-    
-    print(model.predict(input_data, confidence=40, overlap=30).json())
-	
+    	
     # Retrieve detection results
     boxes = interpreter.get_tensor(output_details[0]['index'])[0] # Bounding box coordinates of detected objects
     classes = interpreter.get_tensor(output_details[1]['index'])[0] # Class index of detected objects
