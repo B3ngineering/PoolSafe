@@ -7,6 +7,7 @@ import sys
 import time
 import numpy as np
 import importlib.util
+import json
 
 from roboflow import Roboflow
 rf = Roboflow(api_key="oTFAmE6SVFHYvWSLjvsK")
@@ -15,7 +16,7 @@ model = project.version(1).model
 
 # Define VideoStream class to handle streaming of video from webcam in separate processing thread
 # Source - Adrian Rosebrock, PyImageSearch: https://www.pyimagesearch.com/2015/12/28/increasing-raspberry-pi-fps-with-python-and-opencv/
-
+        
 class VideoStream:
     """Camera object that controls video streaming from the Picamera"""
     def __init__(self,resolution=(640,480),framerate=30):
@@ -160,17 +161,29 @@ while True:
 
     # Grab frame from video stream
     frame1 = videostream.read()
-
+    prediction = model.predict(frame1).json()
+    print(type(prediction))
+    # pred_data = json.load(prediction)
+    try:
+        print(prediction['predictions'][0]['class'])
+    except:
+    	print(prediction['predictions'])
+    	print(prediction.get('image'))
     # Acquire frame and resize to expected shape [1xHxWx3]
     frame = frame1.copy()
     frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     frame_resized = cv2.resize(frame_rgb, (width, height))
     input_data = np.expand_dims(frame_resized, axis=0)
+    
+    # if prediction class == drowning and confidence >=50:
+    # add 1 to a value
+    #if value = 10, execute logic
+    # else reset
 
     # Normalize pixel values if using a floating model (i.e. if model is non-quantized)
     if floating_model:
         input_data = (np.float32(input_data) - input_mean) / input_std
-    # print(model.predict(input_data, confidence=40, overlap=30).json())
+    # print(model.predict('drowning.jpg', confidence=40, overlap=30).json())
     # Perform the actual detection by running the model with the image as input
     interpreter.set_tensor(input_details[0]['index'],input_data)
     interpreter.invoke()
