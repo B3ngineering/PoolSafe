@@ -9,12 +9,20 @@ import numpy as np
 import importlib.util
 import json
 from roboflow import Roboflow
+import smtplib
 
 # Importing model from Roboflow model
 # Source - https://universe.roboflow.com/yashwanee-tetar-jm88u/drowning-detection-and-prevention-in-swimming-pools/model/1
 rf = Roboflow(api_key="oTFAmE6SVFHYvWSLjvsK")
 project = rf.workspace().project("drowning-detection-and-prevention-in-swimming-pools")
 model = project.version(1).model
+
+# Authenticating to send email
+server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
+sender = 'YOUR-EMAIL-HERE'
+passwd = 'YOUR-PASSWORD-HERE'
+server.login(sender, passwd)
+message = 'SOMEONE IS DROWNING'
 
 # Define VideoStream class to handle streaming of video from webcam in separate processing thread
 # Source - https://www.pyimagesearch.com/2015/12/28/increasing-raspberry-pi-fps-with-python-and-opencv/
@@ -172,29 +180,25 @@ while True:
             drown_count += 1
             if drown_count >= 10:
                 print("SOMEONE IS DROWNING")
-                # Figure out how to put things up on the screen and send text
+                server.sendmail(sender, 'YOUR_EMAIL_HERE', message)
         else:
             if drown_count >= 0:
                 drown_count -= 1
-
     except:
         print("No chance of drowning")
+        if drown_count >= 0:
+			drown_count -= 1
 
     # Acquire frame and resize to expected shape [1xHxWx3]
     frame = frame1.copy()
     frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     frame_resized = cv2.resize(frame_rgb, (width, height))
     input_data = np.expand_dims(frame_resized, axis=0)
-    
-    # if prediction class == drowning and confidence >=50:
-    # add 1 to a value
-    #if value = 10, execute logic
-    # else reset
 
     # Normalize pixel values if using a floating model (i.e. if model is non-quantized)
     if floating_model:
         input_data = (np.float32(input_data) - input_mean) / input_std
-    # print(model.predict('drowning.jpg', confidence=40, overlap=30).json())
+
     # Perform the actual detection by running the model with the image as input
     interpreter.set_tensor(input_details[0]['index'],input_data)
     interpreter.invoke()
@@ -203,7 +207,6 @@ while True:
     boxes = interpreter.get_tensor(output_details[0]['index'])[0] # Bounding box coordinates of detected objects
     classes = interpreter.get_tensor(output_details[1]['index'])[0] # Class index of detected objects
     scores = interpreter.get_tensor(output_details[2]['index'])[0] # Confidence of detected objects
-    #num = interpreter.get_tensor(output_details[3]['index'])[0]  # Total number of detected objects (inaccurate and not needed)
 
     # Loop over all detections and draw detection box if confidence is above minimum threshold
     for i in range(len(scores)):
