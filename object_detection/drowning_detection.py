@@ -19,8 +19,8 @@ model = project.version(1).model
 
 # Authenticating to send email
 server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
-sender = 'YOUR-EMAIL-HERE'
-passwd = 'YOUR-PASSWORD-HERE'
+sender = 'bengeorgeyoung@gmail.com'
+passwd = 'kqgxvlcuzblcilcp'
 server.login(sender, passwd)
 message = 'SOMEONE IS DROWNING'
 
@@ -176,18 +176,19 @@ while True:
     prediction = model.predict(frame1).json()
     try:
         print(prediction['predictions'][0]['class'])
-        if prediction['predictions'][0]['class'] == 'drowning' and prediction['predictions'][0]['confidence' >= 50]:
+        print(drown_count)
+        if prediction['predictions'][0]['class'] == 'drowning':
             drown_count += 1
-            if drown_count >= 10:
+            if drown_count >= 8:
                 print("SOMEONE IS DROWNING")
-                server.sendmail(sender, 'YOUR_EMAIL_HERE', message)
+                server.sendmail(sender, 'bengeorgeyoung@gmail.com', message)
         else:
             if drown_count >= 0:
                 drown_count -= 1
     except:
-        print("No chance of drowning")
+        
         if drown_count >= 0:
-			drown_count -= 1
+            drown_count -= 0
 
     # Acquire frame and resize to expected shape [1xHxWx3]
     frame = frame1.copy()
