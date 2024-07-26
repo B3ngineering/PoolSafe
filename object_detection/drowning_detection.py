@@ -13,14 +13,14 @@ import smtplib
 
 # Importing model from Roboflow model
 # Source - https://universe.roboflow.com/yashwanee-tetar-jm88u/drowning-detection-and-prevention-in-swimming-pools/model/1
-rf = Roboflow(api_key="oTFAmE6SVFHYvWSLjvsK")
+rf = Roboflow(api_key="")
 project = rf.workspace().project("drowning-detection-and-prevention-in-swimming-pools")
 model = project.version(1).model
 
 # Authenticating to send email
 server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
 sender = 'bengeorgeyoung@gmail.com'
-passwd = 'kqgxvlcuzblcilcp'
+passwd = ''
 server.login(sender, passwd)
 message = 'SOMEONE IS DROWNING'
 
